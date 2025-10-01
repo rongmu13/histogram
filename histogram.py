@@ -12,7 +12,7 @@ st.title("📊 CSVデータ解析アプリ（複数CSV対応）")
 
 st.markdown(
     """
-- 複数のCSVを同時にアップロードできます。
+- 複数のCSVを同時にアップロードできます（ブラウザとメモリが許す限り）。
 - 各ファイルごとに数値列を選択して、統計量・ヒストグラム（KDE）を表示します。
 - 必要に応じて相関ヒートマップも確認できます。
     """
@@ -38,13 +38,16 @@ uploaded_files = st.file_uploader(
     accept_multiple_files=True
 )
 
-def read_csv_safely(file):
-    """UTF-8優先、ダメならShift_JISで再トライ"""
+@st.cache_data(show_spinner=False)
+def read_csv_safely(file_bytes: bytes) -> pd.DataFrame:
+    import io
+    bio = io.BytesIO(file_bytes)
     try:
-        return pd.read_csv(file)
+        return pd.read_csv(bio)
     except UnicodeDecodeError:
-        file.seek(0)
-        return pd.read_csv(file, encoding="shift_jis", errors="ignore")
+        bio.seek(0)
+        return pd.read_csv(bio, encoding="shift_jis", errors="ignore")
+
 
 if uploaded_files:
     for idx, uploaded_file in enumerate(uploaded_files):
@@ -53,7 +56,8 @@ if uploaded_files:
         st.subheader(f"🗂️ ファイル {idx+1}: {uploaded_file.name}")
 
         # 読み込み
-        df = read_csv_safely(uploaded_file)
+        df = read_csv_safely(uploaded_file.getvalue())
+
 
         # プレビュー
         st.caption(f"行数: {len(df):,}　列数: {df.shape[1]:,}")
@@ -104,4 +108,4 @@ if uploaded_files:
                 ax.set_title("数値列の相関係数", fontsize=13)
                 st.pyplot(fig, clear_figure=True)
 else:
-    st.info("左上の「Browse files」から、CSVファイルをアップロードしてください。")
+    st.info("左上の「Browse files」から、CSVファイルを1つ以上アップロードしてください。")
