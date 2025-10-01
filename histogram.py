@@ -12,7 +12,7 @@ st.title("📊 CSVデータ解析アプリ（複数CSV対応）")
 
 st.markdown(
     """
-- 複数のCSVを同時にアップロードできます（ブラウザとメモリが許す限り）。
+- 複数のCSVを同時にアップロードできます。
 - 各ファイルごとに数値列を選択して、統計量・ヒストグラム（KDE）を表示します。
 - 必要に応じて相関ヒートマップも確認できます。
     """
@@ -104,4 +104,4 @@ if uploaded_files:
                 ax.set_title("数値列の相関係数", fontsize=13)
                 st.pyplot(fig, clear_figure=True)
 else:
-    st.info("左上の「Browse files」から、CSVファイルを1つ以上アップロードしてください。")
+    st.info("左上の「Browse files」から、CSVファイルをアップロードしてください。")
